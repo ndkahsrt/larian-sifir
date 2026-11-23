@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Larian Sifir: Temple Math Runner (Sifir 2 hingga 12)</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Three.js 3D Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <!-- Bekas Kanvas 3D Three.js -->
+    <div id="game-container"></div>
+
+    <!-- HUD (Heads-Up Display) Atas Skrin -->
+    <div id="hud">
+        <div class="hud-group-left">
+            <div class="hud-card" title="Nyawa Pemain">
+                <div id="hearts-container">
+                    <span class="heart full">❤️</span>
+                    <span class="heart full">❤️</span>
+                    <span class="heart full">❤️</span>
+                </div>
+            </div>
+            <div class="hud-card" title="Syiling Emas">
+                <span class="hud-icon">🪙</span>
+                <span id="hud-coins">0</span>
+            </div>
+        </div>
+
+        <div class="hud-group-right">
+            <div class="hud-card" title="Combo Pengganda">
+                <span>COMBO:</span>
+                <span id="hud-combo">1x</span>
+            </div>
+            <div class="hud-card" title="Mata Skor">
+                <span>SKOR:</span>
+                <span id="hud-score">0</span>
+            </div>
+            <button id="btn-sound" class="hud-btn" title="Pasang/Senyapkan Bunyi">🔊</button>
+        </div>
+    </div>
+
+    <!-- Banner Soalan Semasa Di Atas Skrin (Jelas, Utama & Mudah Dilihat) -->
+    <div id="top-question-bar">
+        <div class="question-capsule" id="question-capsule">
+            <div class="question-header">
+                <span class="badge">SIFIR</span>
+                <span class="instruction">Pilih Lorong Jawapan Betul:</span>
+            </div>
+            <div id="current-question-text">8 × 7 = ?</div>
+            <div class="lane-hint-bar">
+                <span>◄ KIRI</span>
+                <span>KANAN ►</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifikasi Maklum Balas (Kemas & Tidak Menghalang Pandangan) -->
+    <div id="feedback-toast" class="feedback-toast">
+        <div class="toast-title">TEPAT SEKALI!</div>
+        <div class="toast-sub">8 × 7 = 56</div>
+    </div>
+
+    <!-- Kawalan Sentuh Bawah Skrin (Touch Buttons untuk Mudah Alih/Tablet) -->
+    <div id="touch-controls">
+        <button id="touch-left" class="touch-btn">
+            <span>◄ KIRI</span>
+            <span class="btn-hint">[A / ◄]</span>
+        </button>
+        <button id="touch-right" class="touch-btn">
+            <span>KANAN ►</span>
+            <span class="btn-hint">[D / ►]</span>
+        </button>
+    </div>
+
+    <!-- MODAL 1: SKRIN MULA / PILIHAN SIFIR -->
+    <div id="start-modal" class="modal-overlay">
+        <div class="modal-card">
+            <h1 class="game-title">🏛️ LARIAN SIFIR 3D</h1>
+            <p class="game-subtitle">Pengembaraan Matematik Temple Runner (Sifir 2 hingga 12)</p>
+
+            <!-- Pilihan Pantas Kategori Sifir -->
+            <div class="section-title">⚡ Pilihan Pantas Sifir:</div>
+            <div class="preset-pills">
+                <button class="preset-pill active" data-preset="2-5">Asas (Sifir 2 - 5)</button>
+                <button class="preset-pill" data-preset="6-9">Pertengahan (6 - 9)</button>
+                <button class="preset-pill" data-preset="2-12">Juara Rimba (2 - 12)</button>
+            </div>
+
+            <!-- Pilihan Sifir Khusus (Grid 2 hingga 12) -->
+            <div class="section-title">🎯 Pilih Sifir Khusus:</div>
+            <div class="tables-grid" id="tables-grid">
+                <!-- Butang Sifir 2 hingga 12 akan dijana secara dinamik atau sedia ada -->
+                <button class="table-btn active" data-table="2">Sifir 2</button>
+                <button class="table-btn active" data-table="3">Sifir 3</button>
+                <button class="table-btn active" data-table="4">Sifir 4</button>
+                <button class="table-btn active" data-table="5">Sifir 5</button>
+                <button class="table-btn" data-table="6">Sifir 6</button>
+                <button class="table-btn" data-table="7">Sifir 7</button>
+                <button class="table-btn" data-table="8">Sifir 8</button>
+                <button class="table-btn" data-table="9">Sifir 9</button>
+                <button class="table-btn" data-table="10">Sifir 10</button>
+                <button class="table-btn" data-table="11">Sifir 11</button>
+                <button class="table-btn" data-table="12">Sifir 12</button>
+            </div>
+
+            <!-- Pilihan Kelajuan Permainan -->
+            <div class="section-title">⏱️ Tahap Kelajuan Larian:</div>
+            <div class="speed-options">
+                <button class="speed-btn" data-speed="easy">🐢 Santai (Mudah)</button>
+                <button class="speed-btn active" data-speed="medium">🏃 Sederhana</button>
+                <button class="speed-btn" data-speed="hard">⚡ Laju (Pakar)</button>
+            </div>
+
+            <!-- Butang Mula Utama -->
+            <button id="btn-start-run" class="start-btn">🚀 MULA BERLARI!</button>
+
+            <!-- Panduan Kawalan -->
+            <div class="controls-guide">
+                <div class="guide-item">
+                    <span>Lorong Kiri:</span>
+                    <span class="key-badge">◄</span> atau <span class="key-badge">A</span>
+                </div>
+                <div class="guide-item">
+                    <span>Lorong Kanan:</span>
+                    <span class="key-badge">►</span> atau <span class="key-badge">D</span>
+                </div>
+                <div class="guide-item">
+                    <span>Skrin Sentuh:</span>
+                    <span class="key-badge">Swipe / Butang</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: GAME OVER / KEPUTUSAN -->
+    <div id="game-over-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h1 class="game-title" style="color: #ff5252;">💀 TAMAT PERMAINAN</h1>
+            <p class="game-subtitle">Hebat! Kamu telah menempuh cabaran lorong sifir rimba!</p>
+
+            <div class="game-over-stats">
+                <div class="stat-box">
+                    <div class="stat-label">Jumlah Skor</div>
+                    <div id="final-score" class="stat-val">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Ketepatan Jawapan</div>
+                    <div id="final-accuracy" class="stat-val">0%</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Soalan Betul</div>
+                    <div class="stat-val"><span id="final-correct">0</span> / <span id="final-questions">0</span></div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Combo Tertinggi</div>
+                    <div id="final-max-combo" class="stat-val">1x</div>
+                </div>
+            </div>
+
+            <!-- Kotak Ulangkaji Pintar (Soalan yang tersilap) -->
+            <div class="review-box">
+                <h4>📝 Senarai Ulang Kaji (Semakan Jawapan):</h4>
+                <div id="review-list">
+                    <p class="text-success">Tiada soalan salah. Sempurna!</p>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button id="btn-restart-game" class="btn-restart">🔄 Main Semula</button>
+                <button id="btn-change-settings" class="btn-settings">⚙️ Tukar Sifir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modul Skrip Permainan -->
+    <script src="mathEngine.js"></script>
+    <script src="audio.js"></script>
+    <script src="game.js"></script>
+
+    <!-- Skrip Antara Muka & Logik Pengawal (UI Controller) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof THREE === 'undefined') {
+                const startModal = document.getElementById('start-modal');
+                if (startModal) {
+                    startModal.innerHTML = `
+                        <div class="modal-card">
+                            <h2 style="color:#ffc837; margin-bottom: 16px;">⚠️ Sambungan Internet Diperlukan</h2>
+                            <p style="color:#e0e0e0; line-height: 1.6;">Pelayar anda memerlukan sambungan internet untuk memuatkan enjin 3D (Three.js) melalui CDN semasa kali pertama dibuka.<br><br>Sila pastikan komputer anda mempunyai akses internet dan tekan <strong>Refresh (F5)</strong> untuk memulakan permainan.</p>
+                        </div>
+                    `;
+                }
+                return;
+            }
+
+            const game = new SifirRunnerGame();
+
+            // Pilihan Sifir semasa
+            let selectedTables = [2, 3, 4, 5];
+            let selectedSpeed = 'medium';
+
+            const startModal = document.getElementById('start-modal');
+            const gameOverModal = document.getElementById('game-over-modal');
+            const btnStart = document.getElementById('btn-start-run');
+            const btnRestart = document.getElementById('btn-restart-game');
+            const btnSettings = document.getElementById('btn-change-settings');
+            const btnSound = document.getElementById('btn-sound');
+
+            const tableButtons = document.querySelectorAll('.table-btn');
+            const presetButtons = document.querySelectorAll('.preset-pill');
+            const speedButtons = document.querySelectorAll('.speed-btn');
+
+            // Pengendali Klik Preset Sifir
+            presetButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    presetButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    const preset = btn.getAttribute('data-preset');
+                    if (preset === '2-5') {
+                        selectedTables = [2, 3, 4, 5];
+                    } else if (preset === '6-9') {
+                        selectedTables = [6, 7, 8, 9];
+                    } else if (preset === '2-12') {
+                        selectedTables = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+                    }
+
+                    // Segerakkan butang grid
+                    tableButtons.forEach(tb => {
+                        const val = parseInt(tb.getAttribute('data-table'), 10);
+                        if (selectedTables.includes(val)) {
+                            tb.classList.add('active');
+                        } else {
+                            tb.classList.remove('active');
+                        }
+                    });
+                });
+            });
+
+            // Pengendali Klik Butang Sifir Individu
+            tableButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const val = parseInt(btn.getAttribute('data-table'), 10);
+                    if (btn.classList.contains('active')) {
+                        // Jangan benarkan nyahpilih jika tinggal 1 sahaja
+                        if (selectedTables.length > 1) {
+                            btn.classList.remove('active');
+                            selectedTables = selectedTables.filter(t => t !== val);
+                        }
+                    } else {
+                        btn.classList.add('active');
+                        selectedTables.push(val);
+                    }
+                    // Nyahaktifkan preset kerana pilihan tersuai
+                    presetButtons.forEach(b => b.classList.remove('active'));
+                });
+            });
+
+            // Pengendali Pilihan Kelajuan
+            speedButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    speedButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    selectedSpeed = btn.getAttribute('data-speed');
+                });
+            });
+
+            // Butang Suara
+            btnSound.addEventListener('click', () => {
+                const muted = game.sound.toggleMute();
+                btnSound.textContent = muted ? '🔇' : '🔊';
+            });
+
+            // Butang Mula
+            btnStart.addEventListener('click', () => {
+                startModal.classList.add('hidden');
+                game.startGame(selectedTables, selectedSpeed);
+            });
+
+            // Butang Main Semula
+            btnRestart.addEventListener('click', () => {
+                gameOverModal.classList.add('hidden');
+                game.startGame(selectedTables, selectedSpeed);
+            });
+
+            // Butang Tukar Tetapan / Sifir
+            btnSettings.addEventListener('click', () => {
+                gameOverModal.classList.add('hidden');
+                startModal.classList.remove('hidden');
+            });
+        });
+    </script>
+</body>
+</html>
